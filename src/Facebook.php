@@ -43,6 +43,7 @@ class Facebook extends Base
     /**
      * Formats data
      * - Data object to string
+     * - Reviewe name
      *
      * @param  Collection $data
      * @return array
@@ -52,6 +53,7 @@ class Facebook extends Base
         $reviews = $data->asArray()['ratings'] ?? [];
         foreach ($reviews as &$r) {
             $r['created_time'] = $r['created_time']->format(DateTimeInterface::ISO8601);
+            $r['reviewer'] = $r['reviewer']['name'];
         }
 
         return $reviews;
