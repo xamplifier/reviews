@@ -22,13 +22,12 @@ class Facebook extends Base
     public function getReviews(EndPoint $e)
     {
         try {
-            $url = sprintf('/%s/?fields=ratings', $e->siteid);
+            $fields = 'created_time,rating,recommendation_type,review_text,reviewer';
+            $url = sprintf('/%s/ratings?fields=%s', $e->siteid, $fields);
             $response = $this->library->get(
                 $url,
                 $e->token
             );
-            $data = $response->getGraphNode();
-
         } catch (\Facebook\Exceptions\FacebookResponseException $e) {
             echo 'Graph returned an error: ' . $e->getMessage();
             exit;
@@ -36,8 +35,23 @@ class Facebook extends Base
             echo 'Facebook SDK returned an error: ' . $e->getMessage();
             exit;
         }
+        $reviews = $response->getGraphEdge();
 
-        return $this->format($data);
+        $totalReviews = [];
+
+        if ($this->library->next($reviews)) {
+            $reviewsArray = $reviews->asArray();
+            $totalReviews = array_merge($totalReviews, $reviewsArray);
+            while ($reviews = $this->library->next($reviews)) {
+                $reviewsArray = $reviews->asArray();
+                $totalReviews = array_merge($totalReviews, $reviewsArray);
+            }
+        } else {
+            $reviewsArray = $reviews->asArray();
+            $totalReviews = array_merge($totalReviews, $reviewsArray);
+        }
+
+        return $this->format($totalReviews);
     }
 
     /**
@@ -48,12 +62,12 @@ class Facebook extends Base
      * @param  Collection $data
      * @return array
      */
-    private function format($data) :array
+    private function format($reviews) :array
     {
-        $reviews = $data->asArray()['ratings'] ?? [];
-        foreach ($reviews as &$r) {
-            $r['created_time'] = $r['created_time']->format(DateTimeInterface::ISO8601);
-            $r['reviewer'] = $r['reviewer']['name'];
+        foreach ($reviews as &$value) {
+            $value['reviewer'] = $value['reviewer']['name'];
+            $value['review_text'] = $value['review_text'] ?? null;
+            $value['created_time'] = $value['created_time']->format(\DateTimeInterface::ISO8601);
         }
 
         return $reviews;
