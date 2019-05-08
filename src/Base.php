@@ -10,6 +10,8 @@ abstract class Base
 
     protected $library;
 
+    protected $errorMsg;
+
     public function __construct()
     {
         $this->setName();
@@ -36,6 +38,21 @@ abstract class Base
         $pos = strrpos($fqcn, "\\") + 1;
         $className = substr($fqcn, $pos, strlen($fqcn));
         $this->name = $name ?: $className;
+    }
+
+    public function setErrorMsg(string $msg) : void
+    {
+        $this->errorMsg = $msg;
+    }
+
+    public function getErrorMsg() : ?string
+    {
+        return $this->errorMsg;
+    }
+
+    public function hasErrors() : boolean
+    {
+        return $this->errorMsg !== null;
     }
 
     abstract public function getReviews(EndPoint $e);

@@ -19,7 +19,7 @@ class Facebook extends Base
         ]));
     }
 
-    public function getReviews(EndPoint $e)
+    public function getReviews(EndPoint $e) :?array
     {
         try {
             $fields = 'created_time,rating,recommendation_type,review_text,reviewer';
@@ -29,11 +29,13 @@ class Facebook extends Base
                 $e->token
             );
         } catch (\Facebook\Exceptions\FacebookResponseException $e) {
-            echo 'Graph returned an error: ' . $e->getMessage();
-            exit;
+            $this->setErrorMsg('Graph returned an error: ' . $e->getMessage());
+
+            return null;
         } catch (\Facebook\Exceptions\FacebookSDKException $e) {
-            echo 'Facebook SDK returned an error: ' . $e->getMessage();
-            exit;
+            $this->setErrorMsg('Facebook SDK returned an error: ' . $e->getMessage());
+
+            return null;
         }
         $reviews = $response->getGraphEdge();
 
