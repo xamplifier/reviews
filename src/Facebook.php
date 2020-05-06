@@ -56,6 +56,50 @@ class Facebook extends Base
         return $this->format($totalReviews);
     }
 
+
+    public function getAccounts($userToken)
+    {
+        
+        try {
+            $fields = 'access_token,name,id';
+            $url = sprintf('/%s?fields=%s', 'me/accounts', $fields);
+
+            $response = $this->library->get(
+                $url,
+                $userToken
+            );
+        } catch (FacebookExceptionsFacebookResponseException $e) {
+            echo 'Graph returned an error: ' . $e->getMessage();
+            exit;
+        } catch (FacebookExceptionsFacebookSDKException $e) {
+            echo 'Facebook SDK returned an error: ' . $e->getMessage();
+            exit;
+        }
+
+
+        $accounts = $response->getGraphEdge();
+
+        $totalAccounts = [];
+        if ($this->library->next($accounts)) {
+          
+            $accountsArray = $accounts->asArray();
+            $totalAccounts = array_merge($totalAccounts, $accountsArray);
+          
+            while ($accounts = $this->library->next($accounts)) {
+                $accountsArray = $accounts->asArray();
+                $totalAccounts = array_merge($totalAccounts, $accountsArray);
+               
+            }
+        } else {
+            $accountsArray = $accounts->asArray();
+            $totalAccounts = array_merge($totalAccounts, $accountsArray);
+            
+        }
+
+        return $totalAccounts;
+    }
+
+
     /**
      * Formats data
      * - Data object to string
