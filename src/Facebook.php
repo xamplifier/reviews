@@ -111,7 +111,7 @@ class Facebook extends Base
     private function format($reviews) :array
     {
         foreach ($reviews as &$value) {
-            $value['reviewer'] = $value['reviewer']['name'];
+            $value['reviewer'] = $value['reviewer']['name'] ?? null;
             $value['review_text'] = $value['review_text'] ?? null;
             $value['created_time'] = $value['created_time']->format(\DateTimeInterface::ISO8601);
         }
