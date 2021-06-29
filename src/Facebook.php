@@ -98,6 +98,59 @@ class Facebook extends Base
 
         return $totalAccounts;
     }
+    
+
+    /**
+     * Get all the facebook pages that are under the defined facebook app
+     *
+     * @throws FacebookExceptionsFacebookResponseException, FacebookExceptionsFacebookSDKException
+     * 
+     * @return array
+     */
+    public function getAssignedPages(string $appId, string $userToken)
+    {
+        $totalAccounts = [];
+       
+        try {
+
+            $fields = 'access_token&about&company_overview&description&name&limit=25';
+            
+            $url = sprintf('/%s/assigned_pages?fields=%s', $appId,$fields);
+
+            $response = $this->library->get(
+                $url,
+                $userToken
+            );
+
+            $accounts = $response->getGraphEdge();
+            
+            if ($this->library->next($accounts)) {
+              
+                $accountsArray = $accounts->asArray();
+                $totalAccounts = array_merge($totalAccounts, $accountsArray);
+              
+                while ($accounts = $this->library->next($accounts)) {
+                    $accountsArray = $accounts->asArray();
+                    $totalAccounts = array_merge($totalAccounts, $accountsArray);
+                   
+                }
+            } else {
+                $accountsArray = $accounts->asArray();
+                $totalAccounts = array_merge($totalAccounts, $accountsArray);
+                
+            }
+
+            return $totalAccounts;
+
+        } catch (FacebookExceptionsFacebookResponseException $e) {
+            echo 'Graph returned an error: ' . $e->getMessage();
+            exit;
+        } catch (FacebookExceptionsFacebookSDKException $e) {
+            echo 'Facebook SDK returned an error: ' . $e->getMessage();
+            exit;
+        }
+
+    }
 
 
     /**
